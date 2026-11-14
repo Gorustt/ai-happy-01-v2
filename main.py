@@ -26,10 +26,21 @@ def main():
     if not picture:
         print("entry.png is empty, refusing to write output", file=sys.stderr)
         return 1
+    if picture[:2] != b"\xff\xd8":
+        print("entry.png is not a JPEG (bad magic), refusing to write output",
+              file=sys.stderr)
+        return 1
     out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
     os.makedirs(out_dir, exist_ok=True)
-    with open(os.path.join(out_dir, "entry.png"), "wb") as fh:
+    out_path = os.path.join(out_dir, "entry.png")
+    with open(out_path, "wb") as fh:
         fh.write(picture)
+    with open(out_path, "rb") as fh:
+        written = fh.read()
+    if written != picture:
+        print("output differs from source after copy, refusing to finish",
+              file=sys.stderr)
+        return 1
     return 0
 
 
